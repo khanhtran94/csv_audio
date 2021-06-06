@@ -5,25 +5,34 @@ import javax.sound.sampled.UnsupportedAudioFileException;
 import java.io.File;
 import java.io.IOException;
 import java.io.SequenceInputStream;
+import java.util.ArrayList;
+import java.util.List;
 
 public class WavAppender {
     public static void main(String[] args) {
 
         try {
-            String[] listAudip ={"out20.wav", "out21.wav", "out22.wav", "out23.wav"};
-            AudioInputStream result = null;
-            for (int i = 0; i< listAudip.length; i++) {
-                if (result == null) {
-                    result = AudioSystem.getAudioInputStream(new File(listAudip[i]));
+            List<String> paths = new ArrayList<>();
+            paths.add("out20.wav");
+            paths.add("out21.wav");
+            paths.add("out22.wav");
+            paths.add("out23.wav");
+            AudioInputStream clip1 = null;
+            for (String path : paths)
+            {
+                if(clip1 == null)
+                {
+                    clip1 = AudioSystem.getAudioInputStream(new File(path));
                     continue;
                 }
-                AudioInputStream clip2 = AudioSystem.getAudioInputStream(new File(listAudip[i]));
-                AudioInputStream appendFile = appentResult(result, clip2);
-                result = appendFile;
+                AudioInputStream clip2 = AudioSystem.getAudioInputStream(new File(path));
+                AudioInputStream appendedFiles = new AudioInputStream(
+                        new SequenceInputStream(clip1, clip2),
+                        clip1.getFormat(),
+                        clip1.getFrameLength() + clip2.getFrameLength());
+                clip1 = appendedFiles;
             }
-            AudioSystem.write(result,
-                    AudioFileFormat.Type.WAVE,
-                    new File("wavAppended.wav"));
+            AudioSystem.write(clip1, AudioFileFormat.Type.WAVE, new File("exported.wav"));
 
         } catch (Exception e) {
 
